@@ -1,0 +1,13 @@
+{
+  "name": "messagerie-instantanee",
+  "version": "1.0.0",
+  "description": "Application de messagerie instantanée avec Node.js et Socket.io",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.0.0"
+  }
+}
