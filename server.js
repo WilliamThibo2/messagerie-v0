@@ -26,11 +26,15 @@ io.on("connection", (socket) => {
     });
 
     socket.on("message", (msg) => {
-        io.emit("message", `${socket.username}: ${msg}`);
+        if (socket.username && msg.length <= 250) {  // Limite de longueur du message côté serveur
+            io.emit("message", `${socket.username}: ${msg}`);
+        }
     });
 
     socket.on("typing", () => {
-        socket.broadcast.emit("typing", socket.username);
+        if (socket.username) {
+            socket.broadcast.emit("typing", socket.username);
+        }
     });
 
     socket.on("stopTyping", () => {
