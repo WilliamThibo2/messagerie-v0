@@ -1,55 +1,60 @@
-const socket = io({ auth: { token: localStorage.getItem("token") } });
+// Initialisation du serveur
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const path = require('path');
 
-const messageSound = new Audio("message-sound.mp3");
-const typingSound = new Audio("typing-sound.mp3");
-const loginContainer = document.getElementById("login-container");
-const chatContainer = document.getElementById("chat-container");
-const messagesContainer = document.getElementById("messages");
-const typingIndicator = document.getElementById("typing-indicator");
+// Configuration du serveur Express
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
-document.getElementById("signin-form").addEventListener("submit", async function (e) {
-    e.preventDefault();
-    const email = document.getElementById("signin-email").value.trim();
-    const password = document.getElementById("signin-password").value.trim();
+// Servir les fichiers statiques (HTML, CSS, JS)
+app.use(express.static(path.join(__dirname, 'public')));
 
-    if (email && password) {
-        const response = await fetch("/signin", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
+// Routage de la page d'accueil
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Gestion des connexions WebSocket
+io.on('connection', (socket) => {
+    console.log('Nouvel utilisateur connecté');
+
+    // Stocker le nom de l'utilisateur pour cette session socket
+    socket.on('login', (username) => {
+        socket.username = username;
+        io.emit('user_connected', username);
+    });
+
+    // Envoi de message
+    socket.on('send_message', (message) => {
+        io.emit('receive_message', {
+            message: message,
+            sender: socket.username
         });
-        const data = await response.json();
-        if (data.token) {
-            localStorage.setItem("token", data.token);
-            socket.emit("join", { username: data.username });
-            loginContainer.style.display = "none";
-            chatContainer.style.display = "flex";
-        } else {
-            alert(data.message);
+    });
+
+    // Indicateur de frappe
+    socket.on('typing', () => {
+        socket.broadcast.emit('typing', socket.username);
+    });
+
+    socket.on('stop_typing', () => {
+        socket.broadcast.emit('stop_typing');
+    });
+
+    // Déconnexion de l'utilisateur
+    socket.on('disconnect', () => {
+        if (socket.username) {
+            io.emit('user_disconnected', socket.username);
         }
-    }
+    });
 });
 
-function displayMessage(msg, type) {
-    const messageElement = document.createElement("div");
-    messageElement.classList.add("message", type);
-
-    const avatar = document.createElement("div");
-    avatar.classList.add("avatar");
-    avatar.textContent = msg.charAt(0).toUpperCase();
-
-    messageElement.appendChild(avatar);
-    messageElement.textContent = msg;
-    messagesContainer.appendChild(messageElement);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-socket.on("message", (msg) => {
-    messageSound.play();
-    displayMessage(msg, "sender");
+// Démarrage du serveur
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Serveur démarré sur le port ${PORT}`);
 });
 
-socket.on("typing", (username) => {
-    typingIndicator.textContent = `${username} est en train de taper...`;
-    typingSound.play();
-});
