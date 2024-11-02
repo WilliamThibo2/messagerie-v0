@@ -72,6 +72,15 @@ button:hover {
     border-radius: 15px 15px 15px 0;
 }
 
+.message.info {
+    color: #555;
+    font-style: italic;
+    background-color: #e0e0e0;
+    align-self: center;
+    padding: 5px;
+    border-radius: 5px;
+}
+
 /* Animation de transition pour les messages */
 @keyframes fadeIn {
     from {
@@ -134,4 +143,9 @@ body.dark-mode {
 
 .dark-mode #messages .message.receiver {
     background-color: #333;
+}
+
+.dark-mode .message.info {
+    background-color: #444;
+    color: #ddd;
 }
