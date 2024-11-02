@@ -1,3 +1,4 @@
+require("dotenv").config(); // Charge les variables d'environnement
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -44,7 +45,7 @@ app.post("/signin", (req, res) => {
 io.on("connection", (socket) => {
     console.log("Un utilisateur est connecté");
 
-    socket.on("join", (username) => {
+    socket.on("join", ({ username }) => {
         socket.username = username;
         io.emit("message", `${socket.username} a rejoint le chat`);
     });
