@@ -17,19 +17,22 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
     console.log("Un utilisateur est connecté");
 
-    // Gestion de l'authentification avec username
-    socket.on("join", (username) => {
-        socket.username = username; // Associe un pseudonyme à la connexion
-        io.emit("message", `${username} a rejoint le chat`);
+    // Gestion de l'authentification avec pseudonyme, e-mail, et mot de passe
+    socket.on("join", (userData) => {
+        if (userData.username && userData.email && userData.password) {
+            socket.username = userData.username; // Associe le pseudonyme à la connexion
+            io.emit("message", `${socket.username} a rejoint le chat`);
+        } else {
+            socket.emit("authError", "Les informations de connexion sont incomplètes.");
+        }
     });
 
     socket.on("message", (msg) => {
-        // Émet le message avec le pseudonyme de l'utilisateur
+        // Émet le message avec seulement le pseudonyme de l'utilisateur
         io.emit("message", `${socket.username}: ${msg}`);
     });
 
     socket.on("disconnect", () => {
-        console.log("Un utilisateur s'est déconnecté");
         if (socket.username) {
             io.emit("message", `${socket.username} a quitté le chat`);
         }
