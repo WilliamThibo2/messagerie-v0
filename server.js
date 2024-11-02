@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(express.static("public"));
 
 const validateUserData = (username, email, password) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
     return username.length >= 3 && emailRegex.test(email) && password.length >= 6;
 };
 
@@ -72,6 +72,11 @@ io.use((socket, next) => {
     socket.on("typing", () => {
         socket.broadcast.emit("typing", socket.username);
     });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });
 
 const PORT = process.env.PORT || 3000;
