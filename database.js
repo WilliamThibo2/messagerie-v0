@@ -10,7 +10,8 @@ db.serialize(() => {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE,
         email TEXT UNIQUE,
-        password TEXT
+        password TEXT,
+        avatar TEXT
     )`);
 
     db.run(`CREATE TABLE IF NOT EXISTS messages (
@@ -21,11 +22,11 @@ db.serialize(() => {
     )`);
 });
 
-const registerUser = (username, email, password, callback) => {
+const registerUser = (username, email, password, avatar, callback) => {
     bcrypt.hash(password, 10, (err, hash) => {
         if (err) return callback(err);
-        db.run(`INSERT INTO users (username, email, password) VALUES (?, ?, ?)`,
-            [username, email, hash], callback);
+        db.run(`INSERT INTO users (username, email, password, avatar) VALUES (?, ?, ?, ?)`,
+            [username, email, hash, avatar], callback);
     });
 };
 
@@ -41,7 +42,7 @@ const authenticateUser = (email, password, callback) => {
 };
 
 const generateToken = (user) => {
-    const payload = { id: user.id, username: user.username };
+    const payload = { id: user.id, username: user.username, avatar: user.avatar };
     return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
