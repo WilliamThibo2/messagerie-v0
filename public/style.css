@@ -57,12 +57,35 @@ button:hover {
 }
 
 /* Styles pour le chat */
+#chat-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
 #messages {
+    flex: 1;
     height: 300px;
     overflow-y: auto;
     border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 10px;
     padding: 10px;
+}
+
+#input-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 10px 0;
+    border-top: 1px solid #e0e0e0;
+    background-color: #ffffff;
+}
+
+#message-form {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
 }
 
 #message-input {
@@ -72,4 +95,18 @@ button:hover {
     border-radius: 20px;
     outline: none;
     transition: border-color 0.3s ease;
+}
+
+#message-form button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#message-form button:hover {
+    background-color: #0056b3;
 }
