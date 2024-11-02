@@ -20,13 +20,11 @@ const validateUserData = (username, email, password) => {
 
 app.post("/signup", (req, res) => {
     const { username, email, password } = req.body;
-    console.log("Signup request:", username, email); // log de débogage
     if (!validateUserData(username, email, password)) {
         return res.status(400).json({ message: "Données invalides" });
     }
     registerUser(username, email, password, (err) => {
         if (err) {
-            console.error("Signup error:", err); // log de l'erreur
             res.status(400).json({ message: "Échec de l'inscription. L'utilisateur ou l'email existe déjà." });
         } else {
             res.json({ message: "Inscription réussie. Vous pouvez vous connecter." });
@@ -36,10 +34,8 @@ app.post("/signup", (req, res) => {
 
 app.post("/signin", (req, res) => {
     const { email, password } = req.body;
-    console.log("Signin request:", email); // log de débogage
     authenticateUser(email, password, (err, user) => {
         if (err || !user) {
-            console.error("Signin error:", err); // log de l'erreur
             res.status(400).json({ message: "Échec de la connexion. Email ou mot de passe incorrect." });
         } else {
             const token = generateToken(user);
