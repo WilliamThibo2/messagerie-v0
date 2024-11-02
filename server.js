@@ -20,35 +20,35 @@ const validateUserData = (username, email, password) => {
     return username.length >= 3 && emailRegex.test(email) && passwordRegex.test(password);
 };
 
-// Route pour l'inscription
+// Route for signup
 app.post("/signup", (req, res) => {
     const { username, email, password } = req.body;
     if (!validateUserData(username, email, password)) {
-        return res.status(400).json({ message: "Données invalides" });
+        return res.status(400).json({ message: "Invalid data" });
     }
     registerUser(username, email, password, (err) => {
         if (err) {
-            res.status(400).json({ message: "Échec de l'inscription. L'utilisateur ou l'email existe déjà." });
+            res.status(400).json({ message: "Signup failed. User or email already exists." });
         } else {
-            res.json({ message: "Inscription réussie. Vous pouvez vous connecter." });
+            res.json({ message: "Signup successful. You can log in now." });
         }
     });
 });
 
-// Route pour la connexion
+// Route for signin
 app.post("/signin", (req, res) => {
     const { email, password } = req.body;
     authenticateUser(email, password, (err, user) => {
         if (err || !user) {
-            res.status(400).json({ message: "Échec de la connexion. Email ou mot de passe incorrect." });
+            res.status(400).json({ message: "Login failed. Incorrect email or password." });
         } else {
             const token = generateToken(user);
-            res.json({ message: "Connexion réussie", username: user.username, token });
+            res.json({ message: "Login successful", username: user.username, token });
         }
     });
 });
 
-// Middleware pour authentifier les utilisateurs avec les sockets
+// Middleware to authenticate users with sockets
 io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (token) {
@@ -85,9 +85,5 @@ io.use((socket, next) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Serveur démarré sur http://localhost:${PORT}`);
-});
-
-server.listen(PORT, () => {
-    console.log(`Serveur démarré sur http://localhost:${PORT}`);
+    console.log(`Server started at http://localhost:${PORT}`);
 });
