@@ -8,17 +8,29 @@
 </head>
 <body>
     <div id="login-container">
-        <form id="login-form">
-            <input type="text" id="username-input" placeholder="Entrez votre pseudonyme" required>
-            <input type="email" id="email-input" placeholder="Entrez votre adresse e-mail" required>
-            <input type="password" id="password-input" placeholder="Entrez votre mot de passe" required>
-            <button type="submit">Rejoindre le Chat</button>
-        </form>
+        <div>
+            <form id="signup-form">
+                <h2>Inscription</h2>
+                <input type="text" id="signup-username" placeholder="Pseudonyme" required>
+                <input type="email" id="signup-email" placeholder="Email" required>
+                <input type="password" id="signup-password" placeholder="Mot de passe" required>
+                <button type="submit">S'inscrire</button>
+            </form>
+        </div>
+
+        <div>
+            <form id="signin-form">
+                <h2>Connexion</h2>
+                <input type="email" id="signin-email" placeholder="Email" required>
+                <input type="password" id="signin-password" placeholder="Mot de passe" required>
+                <button type="submit">Se connecter</button>
+            </form>
+        </div>
     </div>
 
     <div id="chat-container" style="display: none;">
         <div id="messages"></div>
-        <div id="typing-indicator"></div> <!-- Indicateur de saisie ajouté ici -->
+        <div id="typing-indicator"></div>
         <div id="input-container">
             <form id="message-form">
                 <input type="text" id="message-input" placeholder="Entrez un message">
