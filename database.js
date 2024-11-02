@@ -2,7 +2,7 @@ const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// Update to use a persistent database file instead of in-memory
+// Persistent database file
 const db = new sqlite3.Database("./data/database.sqlite");
 
 db.serialize(() => {
