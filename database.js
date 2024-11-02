@@ -2,7 +2,7 @@ const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const db = new sqlite3.Database(":memory:");
+const db = new sqlite3.Database("./database.sqlite");
 
 // Création des tables utilisateurs et messages
 db.serialize(() => {
