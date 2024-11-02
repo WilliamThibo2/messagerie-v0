@@ -1,3 +1,4 @@
+// server.js
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
@@ -52,10 +53,7 @@ io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (token) {
         jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-            if (err) {
-                console.error("Erreur d'authentification : ", err);
-                return next(new Error("Authentication error"));
-            }
+            if (err) return next(new Error("Authentication error"));
             socket.username = decoded.username;
             next();
         });
@@ -63,18 +61,13 @@ io.use((socket, next) => {
         next(new Error("Authentication error"));
     }
 }).on("connection", (socket) => {
-    console.log(`Utilisateur connecté : ${socket.username}`);
     getMessages((err, messages) => {
         if (!err) socket.emit("load_messages", messages);
     });
 
     socket.on("send_message", (message) => {
-        if (socket.username) {
-            saveMessage(socket.username, message);
-            io.emit("receive_message", { message, sender: socket.username });
-        } else {
-            console.error("Utilisateur non authentifié.");
-        }
+        saveMessage(socket.username, message);
+        io.emit("receive_message", { message, sender: socket.username });
     });
 
     socket.on("typing", () => {
@@ -86,7 +79,6 @@ io.use((socket, next) => {
     });
 
     socket.on("disconnect", () => {
-        console.log(`Utilisateur déconnecté : ${socket.username}`);
         io.emit("user_disconnected", socket.username);
     });
 });
