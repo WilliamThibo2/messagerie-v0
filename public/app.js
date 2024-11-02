@@ -1,60 +1,85 @@
-// Initialisation du serveur
-var express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const path = require('path');
+const socket = io("http://localhost:3000", { auth: { token: localStorage.getItem('token') } });
 
-// Configuration du serveur Express
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
+document.getElementById('signup-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('signup-username').value;
+    const email = document.getElementById('signup-email').value;
+    const password = document.getElementById('signup-password').value;
 
-// Servir les fichiers statiques (HTML, CSS, JS)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Routage de la page d'accueil
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    const response = await fetch('/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password })
+    });
+    const result = await response.json();
+    alert(result.message);
 });
 
-// Gestion des connexions WebSocket
-io.on('connection', (socket) => {
-    console.log('Nouvel utilisateur connecté');
+document.getElementById('signin-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('signin-email').value;
+    const password = document.getElementById('signin-password').value;
 
-    // Stocker le nom de l'utilisateur pour cette session socket
-    socket.on('login', (username) => {
-        socket.username = username;
-        io.emit('user_connected', username);
+    const response = await fetch('/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
     });
+    const result = await response.json();
 
-    // Envoi de message
-    socket.on('send_message', (message) => {
-        io.emit('receive_message', {
-            message: message,
-            sender: socket.username
-        });
-    });
-
-    // Indicateur de frappe
-    socket.on('typing', () => {
-        socket.broadcast.emit('typing', socket.username);
-    });
-
-    socket.on('stop_typing', () => {
-        socket.broadcast.emit('stop_typing');
-    });
-
-    // Déconnexion de l'utilisateur
-    socket.on('disconnect', () => {
-        if (socket.username) {
-            io.emit('user_disconnected', socket.username);
-        }
-    });
+    if (response.ok) {
+        localStorage.setItem('token', result.token);
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('chat-container').style.display = 'block';
+        socket.username = result.username;
+    } else {
+        alert(result.message);
+    }
 });
 
-// Démarrage du serveur
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Serveur démarré sur le port ${PORT}`);
+document.getElementById('message-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const message = document.getElementById('message-input').value;
+
+    if (message.trim() !== "") {
+        socket.emit('send_message', message);
+        document.getElementById('message-input').value = '';
+    }
 });
 
+socket.on('receive_message', (data) => {
+    const messageElem = document.createElement('div');
+    messageElem.classList.add('message');
+    messageElem.classList.add(data.sender === socket.username ? 'sender' : 'receiver');
+    messageElem.textContent = `${data.sender}: ${data.message}`;
+    document.getElementById('messages').appendChild(messageElem);
+    document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+});
+
+socket.on('typing', (username) => {
+    document.getElementById('typing-indicator').textContent = `${username} est en train d'écrire...`;
+});
+
+socket.on('stop_typing', () => {
+    document.getElementById('typing-indicator').textContent = '';
+});
+
+socket.on('user_connected', (username) => {
+    const infoElem = document.createElement('div');
+    infoElem.classList.add('message', 'info');
+    infoElem.textContent = `${username} s'est connecté`;
+    document.getElementById('messages').appendChild(infoElem);
+});
+
+socket.on('user_disconnected', (username) => {
+    const infoElem = document.createElement('div');
+    infoElem.classList.add('message', 'info');
+    infoElem.textContent = `${username} s'est déconnecté`;
+    document.getElementById('messages').appendChild(infoElem);
+});
+
+const toggleDarkMode = document.getElementById("toggle-dark-mode");
+toggleDarkMode.addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+    toggleDarkMode.textContent = document.body.classList.contains("dark-mode") ? "Mode Clair" : "Mode Sombre";
+});
