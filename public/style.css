@@ -30,139 +30,73 @@ body {
 
 h2 {
     font-size: 1.5em;
-    color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     text-align: center;
 }
 
-/* Centre les champs et empêche le débordement */
-#login-container form {
+form {
     display: flex;
     flex-direction: column;
-    align-items: center;
 }
 
-#login-container input[type="text"],
-#login-container input[type="email"],
-#login-container input[type="password"] {
-    width: 90%; /* Ajuste la largeur pour éviter le débordement */
-    max-width: 300px; /* Limite la largeur maximale */
-    padding: 10px;
+input[type="text"], input[type="email"], input[type="password"] {
     margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    padding: 12px;
     font-size: 1em;
-    outline: none;
-    transition: border-color 0.3s;
-    box-sizing: border-box; /* Empêche le débordement de padding */
-}
-
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="password"]:focus {
-    border-color: #9fd3c7;
+    border: 1px solid #ccc;
+    border-radius: 8px;
 }
 
 button {
-    width: 90%; /* Alignement similaire aux champs */
-    max-width: 300px;
-    padding: 12px;
-    margin-top: 10px;
-    background-color: #4e7d96;
-    color: #fff;
+    background-color: #009879;
+    color: #ffffff;
     border: none;
-    border-radius: 8px;
+    padding: 12px;
     font-size: 1em;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    margin-top: 10px;
 }
 
 button:hover {
-    background-color: #3a5c6b;
+    background-color: #007c5f;
 }
 
 #messages {
-    flex: 1;
-    padding: 15px;
+    flex-grow: 1;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    margin-bottom: 10px;
 }
 
 .message {
-    max-width: 70%;
-    padding: 12px;
-    margin: 5px 0;
-    border-radius: 20px;
-    position: relative;
-    animation: fadeIn 0.3s ease-in;
+    margin: 5px;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 80%;
 }
 
-.message.sender {
-    background-color: #9fd3c7;
-    align-self: flex-start;
-    color: #333;
-    border-radius: 20px 20px 20px 0;
-}
-
-.message.receiver {
-    background-color: #99aabb;
+.sender {
+    background-color: #daf5dc;
     align-self: flex-end;
-    color: #fff;
-    border-radius: 20px 20px 0 20px;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.receiver {
+    background-color: #f5dada;
+    align-self: flex-start;
+}
+
+.info {
+    background-color: #e0e0e0;
+    color: #333;
+    text-align: center;
+    font-style: italic;
+    border-radius: 15px;
 }
 
 #typing-indicator {
-    font-style: italic;
-    color: #555;
-    padding: 5px;
-    margin: 10px 0;
-    text-align: left;
-}
-
-#error-message {
-    color: #d9534f;
-    text-align: center;
-    margin: 5px 0;
-}
-
-#input-container {
-    display: flex;
-    justify-content: center;
-    padding: 10px 0;
-    border-top: 1px solid #e0e0e0;
-}
-
-#message-form {
-    display: flex;
-    width: 100%;
-    gap: 10px;
-}
-
-#message-input {
-    flex: 1;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    outline: none;
-    transition: border-color 0.3s ease;
-}
-
-#message-form button {
-    padding: 10px 20px;
-    background-color: #4e7d96;
-    color: white;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
+    color: #777;
+    font-size: 0.9em;
+    font-style
 
 #message-form button:hover {
     background-color: #3a5c6b;
