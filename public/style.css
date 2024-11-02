@@ -29,7 +29,7 @@ body {
     width: 100%;
 }
 
-#username-input {
+#username-input, #email-input, #password-input {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 20px;
@@ -38,7 +38,7 @@ body {
     margin-bottom: 10px;
 }
 
-#username-input:focus {
+#username-input:focus, #email-input:focus, #password-input:focus {
     border-color: #007bff;
 }
 
@@ -56,7 +56,7 @@ button:hover {
     background-color: #0056b3;
 }
 
-/* Styles existants pour le chat */
+/* Styles pour le chat */
 #messages {
     height: 300px;
     overflow-y: auto;
@@ -72,8 +72,4 @@ button:hover {
     border-radius: 20px;
     outline: none;
     transition: border-color 0.3s ease;
-}
-
-#message-input:focus {
-    border-color: #007bff;
 }
