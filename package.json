@@ -2,7 +2,6 @@
   "name": "messagerie-instantanee",
   "version": "1.0.0",
   "description": "Application de messagerie instantanée avec Node.js et Socket.io",
-  "license": "MIT"
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -14,5 +13,6 @@
     "sqlite3": "^5.1.2",
     "bcrypt": "^5.1.0",
     "jsonwebtoken": "^9.0.0"
-  }
+  },
+  "license": "MIT"
 }
