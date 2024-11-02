@@ -79,6 +79,7 @@
                 localStorage.setItem('token', result.token);
                 document.getElementById('login-container').style.display = 'none';
                 document.getElementById('chat-container').style.display = 'block';
+                socket.username = result.username;
             } else {
                 alert(result.message);
             }
@@ -95,7 +96,9 @@
 
         socket.on('message', (data) => {
             const messageElem = document.createElement('div');
-            messageElem.textContent = data;
+            messageElem.classList.add('message');
+            messageElem.classList.add(data.sender === socket.username ? 'sender' : 'receiver');
+            messageElem.textContent = `${data.sender}: ${data.message}`;
             document.getElementById('messages').appendChild(messageElem);
         });
 
@@ -105,6 +108,20 @@
 
         socket.on('stop_typing', () => {
             document.getElementById('typing-indicator').textContent = '';
+        });
+
+        socket.on('user_connected', (message) => {
+            const infoElem = document.createElement('div');
+            infoElem.classList.add('message', 'info');
+            infoElem.textContent = message;
+            document.getElementById('messages').appendChild(infoElem);
+        });
+
+        socket.on('user_disconnected', (message) => {
+            const infoElem = document.createElement('div');
+            infoElem.classList.add('message', 'info');
+            infoElem.textContent = message;
+            document.getElementById('messages').appendChild(infoElem);
         });
     </script>
 </body>
