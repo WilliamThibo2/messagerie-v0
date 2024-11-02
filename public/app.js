@@ -6,29 +6,56 @@ const messagesContainer = document.getElementById("messages");
 const typingIndicator = document.getElementById("typing-indicator");
 const messageInput = document.getElementById("message-input");
 
-// Gestion de la connexion
-document.getElementById("login-form").addEventListener("submit", function (e) {
+// Gestion de l'inscription
+document.getElementById("signup-form").addEventListener("submit", async function (e) {
     e.preventDefault();
-    const username = document.getElementById("username-input").value.trim();
-    const email = document.getElementById("email-input").value.trim();
-    const password = document.getElementById("password-input").value.trim();
+    const username = document.getElementById("signup-username").value.trim();
+    const email = document.getElementById("signup-email").value.trim();
+    const password = document.getElementById("signup-password").value.trim();
 
     if (username && email && password) {
-        socket.emit("join", { username, email, password });
-        loginContainer.style.display = "none";
-        chatContainer.style.display = "flex";
+        const response = await fetch("/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, email, password })
+        });
+        const data = await response.json();
+        alert(data.message); // Affiche le message du serveur
+    }
+});
+
+// Gestion de la connexion
+document.getElementById("signin-form").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    const email = document.getElementById("signin-email").value.trim();
+    const password = document.getElementById("signin-password").value.trim();
+
+    if (email && password) {
+        const response = await fetch("/signin", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (data.username) {
+            socket.emit("join", { username: data.username });
+            loginContainer.style.display = "none";
+            chatContainer.style.display = "flex";
+        } else {
+            alert(data.message);
+        }
     }
 });
 
 // Envoi de message
 document.getElementById("message-form").addEventListener("submit", function (e) {
     e.preventDefault();
-    const message = messageInput.value.trim(); // Supprime les espaces en début et fin
-    if (message) { // Vérifie que le message n'est pas vide
-        socket.emit("message", message); // Envoie le message au serveur
-        displayMessage(message, "receiver"); // Affiche le message comme envoyé
-        messageInput.value = ""; // Réinitialise le champ de saisie
-        socket.emit("stopTyping"); // Indique que l'utilisateur a arrêté de taper
+    const message = messageInput.value.trim();
+    if (message) {
+        socket.emit("message", message);
+        displayMessage(message, "receiver");
+        messageInput.value = "";
+        socket.emit("stopTyping");
     }
 });
 
@@ -47,14 +74,7 @@ socket.on("stopTyping", () => {
 
 // Réception des messages
 socket.on("message", (msg) => {
-    displayMessage(msg, "sender"); // Affiche les messages reçus
-});
-
-// Réception des erreurs d'authentification
-socket.on("authError", function (errorMsg) {
-    alert(errorMsg);
-    loginContainer.style.display = "flex";
-    chatContainer.style.display = "none";
+    displayMessage(msg, "sender");
 });
 
 // Affiche un message avec style
@@ -63,5 +83,5 @@ function displayMessage(msg, type) {
     messageElement.classList.add("message", type);
     messageElement.textContent = msg;
     messagesContainer.appendChild(messageElement);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight; // Défile vers le bas
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
