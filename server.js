@@ -2,39 +2,59 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const path = require("path");
+const bodyParser = require("body-parser");
+const { registerUser, authenticateUser } = require("./database");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
 app.use(express.static(path.join(__dirname, "public")));
+app.use(bodyParser.json());
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// Route d'inscription
+app.post("/signup", (req, res) => {
+    const { username, email, password } = req.body;
+    registerUser(username, email, password, (err) => {
+        if (err) {
+            res.status(400).json({ message: "Échec de l'inscription. L'utilisateur ou l'email existe déjà." });
+        } else {
+            res.json({ message: "Inscription réussie. Vous pouvez vous connecter." });
+        }
+    });
+});
+
+// Route de connexion
+app.post("/signin", (req, res) => {
+    const { email, password } = req.body;
+    authenticateUser(email, password, (err, user) => {
+        if (err || !user) {
+            res.status(400).json({ message: "Échec de la connexion. Email ou mot de passe incorrect." });
+        } else {
+            res.json({ message: "Connexion réussie", username: user.username });
+        }
+    });
+});
+
+// Connexion à Socket.IO
 io.on("connection", (socket) => {
     console.log("Un utilisateur est connecté");
 
-    socket.on("join", (userData) => {
-        if (userData.username && userData.email && userData.password) {
-            socket.username = userData.username;
-            io.emit("message", `${socket.username} a rejoint le chat`);
-        } else {
-            socket.emit("authError", "Les informations de connexion sont incomplètes.");
-        }
+    socket.on("join", (username) => {
+        socket.username = username;
+        io.emit("message", `${socket.username} a rejoint le chat`);
     });
 
     socket.on("message", (msg) => {
-        if (socket.username && msg.length <= 250) {  // Limite de longueur du message côté serveur
-            io.emit("message", `${socket.username}: ${msg}`);
-        }
+        io.emit("message", `${socket.username}: ${msg}`);
     });
 
     socket.on("typing", () => {
-        if (socket.username) {
-            socket.broadcast.emit("typing", socket.username);
-        }
+        socket.broadcast.emit("typing", socket.username);
     });
 
     socket.on("stopTyping", () => {
