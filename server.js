@@ -19,6 +19,7 @@ const validateUserData = (username, email, password) => {
     return username.length >= 3 && emailRegex.test(email) && passwordRegex.test(password);
 };
 
+// Route pour l'inscription
 app.post("/signup", (req, res) => {
     const { username, email, password } = req.body;
     if (!validateUserData(username, email, password)) {
@@ -33,6 +34,7 @@ app.post("/signup", (req, res) => {
     });
 });
 
+// Route pour la connexion
 app.post("/signin", (req, res) => {
     const { email, password } = req.body;
     authenticateUser(email, password, (err, user) => {
@@ -45,6 +47,7 @@ app.post("/signin", (req, res) => {
     });
 });
 
+// Middleware pour authentifier les utilisateurs avec les sockets
 io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (token) {
@@ -57,19 +60,13 @@ io.use((socket, next) => {
         next(new Error("Authentication error"));
     }
 }).on("connection", (socket) => {
-    getMessages((err, rows) => {
-        if (!err) {
-            rows.forEach(row => {
-                socket.emit("message", { message: row.message, sender: row.username });
-            });
-        }
+    getMessages((err, messages) => {
+        if (!err) socket.emit("load_messages", messages);
     });
 
-    io.emit("user_connected", `${socket.username} a rejoint le chat`);
-
-    socket.on("message", (msg) => {
-        saveMessage(socket.username, msg);
-        io.emit("message", { message: msg, sender: socket.username });
+    socket.on("send_message", (message) => {
+        saveMessage(socket.username, message);
+        io.emit("receive_message", { message, sender: socket.username });
     });
 
     socket.on("typing", () => {
@@ -81,15 +78,14 @@ io.use((socket, next) => {
     });
 
     socket.on("disconnect", () => {
-        io.emit("user_disconnected", `${socket.username} a quitté le chat`);
+        io.emit("user_disconnected", socket.username);
     });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Serveur démarré sur le port ${PORT}`);
 });
-
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
