@@ -26,7 +26,6 @@
         </form>
     </div>
 </div>
-
 <div id="chat-container" style="display: none;">
     <button id="toggle-dark-mode">Mode Sombre</button>
     <div id="messages"></div>
@@ -38,18 +37,9 @@
         </form>
     </div>
 </div>
-
 <script src="/socket.io/socket.io.js"></script>
 <script>
-const socket = io({
-    auth: {
-        token: localStorage.getItem('token')
-    }
-});
-
-socket.on("connect_error", (err) => {
-    alert(`Erreur de connexion : ${err.message}`);
-});
+const socket = io({ auth: { token: localStorage.getItem('token') } });
 
 document.getElementById('signup-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -82,7 +72,7 @@ document.getElementById('signin-form').addEventListener('submit', async (e) => {
         localStorage.setItem('token', result.token);
         document.getElementById('login-container').style.display = 'none';
         document.getElementById('chat-container').style.display = 'block';
-        socket.username = result.username;
+        socket.username = result.username;  // Stocker le pseudonyme
     } else {
         alert(result.message);
     }
@@ -91,6 +81,7 @@ document.getElementById('signin-form').addEventListener('submit', async (e) => {
 document.getElementById('message-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const message = document.getElementById('message-input').value;
+
     if (message.trim() !== "") {
         socket.emit('send_message', message);
         document.getElementById('message-input').value = '';
@@ -114,19 +105,26 @@ socket.on('stop_typing', () => {
     document.getElementById('typing-indicator').textContent = '';
 });
 
-socket.on('user_connected', (message) => {
+socket.on('user_connected', (username) => {
     const infoElem = document.createElement('div');
     infoElem.classList.add('message', 'info');
-    infoElem.textContent = message;
+    infoElem.textContent = `${username} s'est connecté`;
     document.getElementById('messages').appendChild(infoElem);
 });
 
-socket.on('user_disconnected', (message) => {
+socket.on('user_disconnected', (username) => {
     const infoElem = document.createElement('div');
     infoElem.classList.add('message', 'info');
-    infoElem.textContent = message;
+    infoElem.textContent = `${username} s'est déconnecté`;
     document.getElementById('messages').appendChild(infoElem);
+});
+
+const toggleDarkMode = document.getElementById("toggle-dark-mode");
+toggleDarkMode.addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+    toggleDarkMode.textContent = document.body.classList.contains("dark-mode") ? "Mode Clair" : "Mode Sombre";
 });
 </script>
 </body>
 </html>
+
