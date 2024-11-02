@@ -15,7 +15,8 @@ app.use(express.static("public"));
 
 const validateUserData = (username, email, password) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return username.length >= 3 && emailRegex.test(email) && password.length >= 6;
+    const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/;
+    return username.length >= 3 && emailRegex.test(email) && passwordRegex.test(password);
 };
 
 app.post("/signup", (req, res) => {
@@ -59,20 +60,36 @@ io.use((socket, next) => {
     getMessages((err, rows) => {
         if (!err) {
             rows.forEach(row => {
-                socket.emit("message", `${row.username}: ${row.message}`);
+                socket.emit("message", { message: row.message, sender: row.username });
             });
         }
     });
 
+    io.emit("user_connected", `${socket.username} a rejoint le chat`);
+
     socket.on("message", (msg) => {
         saveMessage(socket.username, msg);
-        io.emit("message", `${socket.username}: ${msg}`);
+        io.emit("message", { message: msg, sender: socket.username });
     });
 
     socket.on("typing", () => {
         socket.broadcast.emit("typing", socket.username);
     });
+
+    socket.on("stop_typing", () => {
+        socket.broadcast.emit("stop_typing");
+    });
+
+    socket.on("disconnect", () => {
+        io.emit("user_disconnected", `${socket.username} a quitté le chat`);
+    });
 });
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
+
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
