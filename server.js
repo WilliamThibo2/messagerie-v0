@@ -7,9 +7,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-app.use(express.static(path.join(__dirname, "public"))); // Sert le dossier public
+app.use(express.static(path.join(__dirname, "public")));
 
-// Route principale
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -17,10 +16,9 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
     console.log("Un utilisateur est connecté");
 
-    // Gestion de l'authentification avec pseudonyme, e-mail, et mot de passe
     socket.on("join", (userData) => {
         if (userData.username && userData.email && userData.password) {
-            socket.username = userData.username; // Associe le pseudonyme à la connexion
+            socket.username = userData.username;
             io.emit("message", `${socket.username} a rejoint le chat`);
         } else {
             socket.emit("authError", "Les informations de connexion sont incomplètes.");
@@ -28,8 +26,15 @@ io.on("connection", (socket) => {
     });
 
     socket.on("message", (msg) => {
-        // Émet le message avec seulement le pseudonyme de l'utilisateur
         io.emit("message", `${socket.username}: ${msg}`);
+    });
+
+    socket.on("typing", () => {
+        socket.broadcast.emit("typing", socket.username);
+    });
+
+    socket.on("stopTyping", () => {
+        socket.broadcast.emit("stopTyping");
     });
 
     socket.on("disconnect", () => {
