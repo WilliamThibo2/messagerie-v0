@@ -40,6 +40,72 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="app.js"></script>
+    <script>
+        const socket = io({
+            auth: {
+                token: localStorage.getItem('token')
+            }
+        });
+
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('signup-username').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+
+            const response = await fetch('/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, email, password })
+            });
+
+            const result = await response.json();
+            alert(result.message);
+        });
+
+        document.getElementById('signin-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+
+            const response = await fetch('/signin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                localStorage.setItem('token', result.token);
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('chat-container').style.display = 'block';
+            } else {
+                alert(result.message);
+            }
+        });
+
+        document.getElementById('message-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const message = document.getElementById('message-input').value;
+            if (message.trim() !== "") {
+                socket.emit('message', message);
+                document.getElementById('message-input').value = '';
+            }
+        });
+
+        socket.on('message', (data) => {
+            const messageElem = document.createElement('div');
+            messageElem.textContent = data;
+            document.getElementById('messages').appendChild(messageElem);
+        });
+
+        socket.on('typing', (username) => {
+            document.getElementById('typing-indicator').textContent = `${username} est en train d'écrire...`;
+        });
+
+        socket.on('stop_typing', () => {
+            document.getElementById('typing-indicator').textContent = '';
+        });
+    </script>
 </body>
 </html>
