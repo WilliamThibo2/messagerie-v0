@@ -1,25 +1,28 @@
-require("dotenv").config(); // Charge les variables d'environnement
 const express = require("express");
 const http = require("http");
-const { Server } = require("socket.io");
-const path = require("path");
-const bodyParser = require("body-parser");
-const { registerUser, authenticateUser } = require("./database");
+const socketIo = require("socket.io");
+const jwt = require("jsonwebtoken");
+const { registerUser, authenticateUser, generateToken, saveMessage, getMessages } = require("./database");
+
+require("dotenv").config();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+const io = socketIo(server);
 
-app.use(express.static(path.join(__dirname, "public")));
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.static("public"));
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-});
+const validateUserData = (username, email, password) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return username.length >= 3 && emailRegex.test(email) && password.length >= 6;
+};
 
-// Route d'inscription
 app.post("/signup", (req, res) => {
     const { username, email, password } = req.body;
+    if (!validateUserData(username, email, password)) {
+        return res.status(400).json({ message: "Données invalides" });
+    }
     registerUser(username, email, password, (err) => {
         if (err) {
             res.status(400).json({ message: "Échec de l'inscription. L'utilisateur ou l'email existe déjà." });
@@ -29,47 +32,49 @@ app.post("/signup", (req, res) => {
     });
 });
 
-// Route de connexion
 app.post("/signin", (req, res) => {
     const { email, password } = req.body;
     authenticateUser(email, password, (err, user) => {
         if (err || !user) {
             res.status(400).json({ message: "Échec de la connexion. Email ou mot de passe incorrect." });
         } else {
-            res.json({ message: "Connexion réussie", username: user.username });
+            const token = generateToken(user);
+            res.json({ message: "Connexion réussie", username: user.username, token });
         }
     });
 });
 
-// Connexion à Socket.IO
-io.on("connection", (socket) => {
-    console.log("Un utilisateur est connecté");
-
-    socket.on("join", ({ username }) => {
-        socket.username = username;
-        io.emit("message", `${socket.username} a rejoint le chat`);
+io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
+    if (token) {
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) return next(new Error("Authentication error"));
+            socket.username = decoded.username;
+            next();
+        });
+    } else {
+        next(new Error("Authentication error"));
+    }
+}).on("connection", (socket) => {
+    getMessages((err, rows) => {
+        if (!err) {
+            rows.forEach(row => {
+                socket.emit("message", `${row.username}: ${row.message}`);
+            });
+        }
     });
 
     socket.on("message", (msg) => {
+        saveMessage(socket.username, msg);
         io.emit("message", `${socket.username}: ${msg}`);
     });
 
     socket.on("typing", () => {
         socket.broadcast.emit("typing", socket.username);
     });
-
-    socket.on("stopTyping", () => {
-        socket.broadcast.emit("stopTyping");
-    });
-
-    socket.on("disconnect", () => {
-        if (socket.username) {
-            io.emit("message", `${socket.username} a quitté le chat`);
-        }
-    });
 });
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Serveur démarré sur le port ${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });
