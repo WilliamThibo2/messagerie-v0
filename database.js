@@ -1,45 +1,56 @@
 const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-const db = new sqlite3.Database("./users.db", (err) => {
-    if (err) console.error("Erreur de connexion à la base de données :", err);
-    else console.log("Base de données SQLite connectée.");
-});
+const db = new sqlite3.Database(":memory:");
 
-// Crée la table utilisateurs si elle n'existe pas
+// Création des tables utilisateurs et messages
 db.serialize(() => {
-    db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            email TEXT UNIQUE,
-            password TEXT
-        )
-    `);
+    db.run(`CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE,
+        email TEXT UNIQUE,
+        password TEXT
+    )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
+        message TEXT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
 });
 
-// Fonction pour enregistrer un nouvel utilisateur
 const registerUser = (username, email, password, callback) => {
     bcrypt.hash(password, 10, (err, hash) => {
         if (err) return callback(err);
-        db.run(
-            `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`,
-            [username, email, hash],
-            callback
-        );
+        db.run(`INSERT INTO users (username, email, password) VALUES (?, ?, ?)`,
+            [username, email, hash], callback);
     });
 };
 
-// Fonction pour vérifier les informations de connexion
 const authenticateUser = (email, password, callback) => {
     db.get(`SELECT * FROM users WHERE email = ?`, [email], (err, user) => {
-        if (err) return callback(err);
-        if (!user) return callback(null, false); // Utilisateur non trouvé
-        bcrypt.compare(password, user.password, (err, res) => {
-            if (res) callback(null, user); // Succès
-            else callback(null, false); // Mot de passe incorrect
+        if (err || !user) return callback(err || new Error("User not found"));
+        bcrypt.compare(password, user.password, (err, isMatch) => {
+            if (err) return callback(err);
+            if (isMatch) callback(null, user);
+            else callback(new Error("Password incorrect"));
         });
     });
 };
 
-module.exports = { registerUser, authenticateUser };
+const generateToken = (user) => {
+    const payload = { id: user.id, username: user.username };
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+};
+
+const saveMessage = (username, message) => {
+    db.run(`INSERT INTO messages (username, message) VALUES (?, ?)`, [username, message]);
+};
+
+const getMessages = (callback) => {
+    db.all(`SELECT * FROM messages ORDER BY timestamp ASC`, [], callback);
+};
+
+module.exports = { registerUser, authenticateUser, generateToken, saveMessage, getMessages };
