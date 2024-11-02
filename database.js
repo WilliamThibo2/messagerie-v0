@@ -54,3 +54,4 @@ const getMessages = (callback) => {
 };
 
 module.exports = { registerUser, authenticateUser, generateToken, saveMessage, getMessages };
+
