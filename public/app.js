@@ -3,10 +3,12 @@ const socket = io();
 // Gestion du formulaire de connexion
 document.getElementById("login-form").addEventListener("submit", function (e) {
     e.preventDefault();
-    const usernameInput = document.getElementById("username-input");
-    const username = usernameInput.value.trim();
-    if (username) {
-        socket.emit("join", username); // Envoie le pseudonyme au serveur
+    const username = document.getElementById("username-input").value.trim();
+    const email = document.getElementById("email-input").value.trim();
+    const password = document.getElementById("password-input").value.trim();
+
+    if (username && email && password) {
+        socket.emit("join", { username, email, password }); // Envoie les infos de connexion au serveur
         document.getElementById("login-container").style.display = "none";
         document.getElementById("chat-container").style.display = "flex";
     }
@@ -28,4 +30,11 @@ socket.on("message", function (msg) {
     const messageElement = document.createElement("div");
     messageElement.textContent = msg;
     document.getElementById("messages").appendChild(messageElement);
+});
+
+// Réception des erreurs d'authentification
+socket.on("authError", function (errorMsg) {
+    alert(errorMsg); // Affiche une alerte avec le message d'erreur
+    document.getElementById("login-container").style.display = "flex";
+    document.getElementById("chat-container").style.display = "none";
 });
