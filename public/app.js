@@ -1,6 +1,12 @@
 const socket = io();
 
-// Gestion du formulaire de connexion
+const loginContainer = document.getElementById("login-container");
+const chatContainer = document.getElementById("chat-container");
+const messagesContainer = document.getElementById("messages");
+const typingIndicator = document.getElementById("typing-indicator");
+const messageInput = document.getElementById("message-input");
+
+// Gestion de la connexion
 document.getElementById("login-form").addEventListener("submit", function (e) {
     e.preventDefault();
     const username = document.getElementById("username-input").value.trim();
@@ -8,33 +14,54 @@ document.getElementById("login-form").addEventListener("submit", function (e) {
     const password = document.getElementById("password-input").value.trim();
 
     if (username && email && password) {
-        socket.emit("join", { username, email, password }); // Envoie les infos de connexion au serveur
-        document.getElementById("login-container").style.display = "none";
-        document.getElementById("chat-container").style.display = "flex";
+        socket.emit("join", { username, email, password });
+        loginContainer.style.display = "none";
+        chatContainer.style.display = "flex";
     }
 });
 
-// Gestion de l'envoi de message
+// Envoi de message
 document.getElementById("message-form").addEventListener("submit", function (e) {
     e.preventDefault();
-    const messageInput = document.getElementById("message-input");
     const message = messageInput.value;
     if (message) {
-        socket.emit("message", message); // Envoie le message au serveur
-        messageInput.value = ""; // Efface le champ de saisie
+        socket.emit("message", message);
+        displayMessage(message, "receiver");
+        messageInput.value = "";
+        socket.emit("stopTyping");  // Indique que l'utilisateur a arrêté de taper
     }
+});
+
+// Indicateur de saisie
+messageInput.addEventListener("input", () => {
+    socket.emit("typing");
+});
+
+socket.on("typing", (username) => {
+    typingIndicator.textContent = `${username} est en train de taper...`;
+});
+
+socket.on("stopTyping", () => {
+    typingIndicator.textContent = "";
 });
 
 // Réception des messages
-socket.on("message", function (msg) {
-    const messageElement = document.createElement("div");
-    messageElement.textContent = msg;
-    document.getElementById("messages").appendChild(messageElement);
+socket.on("message", (msg) => {
+    displayMessage(msg, "sender");
 });
 
 // Réception des erreurs d'authentification
 socket.on("authError", function (errorMsg) {
-    alert(errorMsg); // Affiche une alerte avec le message d'erreur
-    document.getElementById("login-container").style.display = "flex";
-    document.getElementById("chat-container").style.display = "none";
+    alert(errorMsg);
+    loginContainer.style.display = "flex";
+    chatContainer.style.display = "none";
 });
+
+// Affiche un message avec style
+function displayMessage(msg, type) {
+    const messageElement = document.createElement("div");
+    messageElement.classList.add("message", type);
+    messageElement.textContent = msg;
+    messagesContainer.appendChild(messageElement);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
