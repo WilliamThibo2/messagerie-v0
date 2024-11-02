@@ -29,6 +29,7 @@
     </div>
 
     <div id="chat-container" style="display: none;">
+        <button id="toggle-dark-mode">Mode Sombre</button>
         <div id="messages"></div>
         <div id="typing-indicator"></div>
         <div id="input-container">
@@ -89,17 +90,18 @@
             e.preventDefault();
             const message = document.getElementById('message-input').value;
             if (message.trim() !== "") {
-                socket.emit('message', message);
+                socket.emit('send_message', message);
                 document.getElementById('message-input').value = '';
             }
         });
 
-        socket.on('message', (data) => {
+        socket.on('receive_message', (data) => {
             const messageElem = document.createElement('div');
             messageElem.classList.add('message');
             messageElem.classList.add(data.sender === socket.username ? 'sender' : 'receiver');
             messageElem.textContent = `${data.sender}: ${data.message}`;
             document.getElementById('messages').appendChild(messageElem);
+            document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
         });
 
         socket.on('typing', (username) => {
@@ -122,6 +124,12 @@
             infoElem.classList.add('message', 'info');
             infoElem.textContent = message;
             document.getElementById('messages').appendChild(infoElem);
+        });
+
+        const toggleDarkMode = document.getElementById("toggle-dark-mode");
+        toggleDarkMode.addEventListener("click", () => {
+            document.body.classList.toggle("dark-mode");
+            toggleDarkMode.textContent = document.body.classList.contains("dark-mode") ? "Mode Clair" : "Mode Sombre";
         });
     </script>
 </body>
