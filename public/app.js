@@ -20,28 +20,21 @@ document.getElementById("login-form").addEventListener("submit", function (e) {
     }
 });
 
-// Envoi de message avec limite de longueur
+// Envoi de message
 document.getElementById("message-form").addEventListener("submit", function (e) {
     e.preventDefault();
-    const message = messageInput.value;
-    if (message && message.length <= 250) {  // Limite à 250 caractères
-        socket.emit("message", message);
-        displayMessage(message, "receiver");
-        messageInput.value = "";
-        socket.emit("stopTyping");
-    } else {
-        alert("Le message est trop long.");
+    const message = messageInput.value.trim(); // Supprime les espaces en début et fin
+    if (message) { // Vérifie que le message n'est pas vide
+        socket.emit("message", message); // Envoie le message au serveur
+        displayMessage(message, "receiver"); // Affiche le message comme envoyé
+        messageInput.value = ""; // Réinitialise le champ de saisie
+        socket.emit("stopTyping"); // Indique que l'utilisateur a arrêté de taper
     }
 });
 
-// Indicateur de saisie avec délai
-let typingTimeout;
+// Indicateur de saisie
 messageInput.addEventListener("input", () => {
     socket.emit("typing");
-    clearTimeout(typingTimeout);
-    typingTimeout = setTimeout(() => {
-        socket.emit("stopTyping");
-    }, 1000);  // Arrête l'indicateur après 1 seconde d'inactivité
 });
 
 socket.on("typing", (username) => {
@@ -54,7 +47,7 @@ socket.on("stopTyping", () => {
 
 // Réception des messages
 socket.on("message", (msg) => {
-    displayMessage(msg, "sender");
+    displayMessage(msg, "sender"); // Affiche les messages reçus
 });
 
 // Réception des erreurs d'authentification
@@ -70,5 +63,5 @@ function displayMessage(msg, type) {
     messageElement.classList.add("message", type);
     messageElement.textContent = msg;
     messagesContainer.appendChild(messageElement);
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight; // Défile vers le bas
 }
