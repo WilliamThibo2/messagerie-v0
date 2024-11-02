@@ -1,6 +1,8 @@
 /* Styles généraux */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Roboto', sans-serif;
     background: linear-gradient(135deg, #eceff1, #b0bec5);
     padding: 20px;
     display: flex;
@@ -9,11 +11,7 @@ body {
     min-height: 100vh;
 }
 
-h2 {
-    text-align: center;
-    font-size: 2em;
-}
-
+/* Styles pour les conteneurs */
 #login-container, #chat-container {
     width: 100%;
     max-width: 400px;
@@ -21,6 +19,13 @@ h2 {
     background-color: #ffffff;
     border-radius: 8px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles des titres */
+h2 {
+    text-align: center;
+    font-size: 2em;
+    margin-bottom: 20px;
 }
 
 /* Styles pour les boutons */
@@ -43,19 +48,22 @@ button:hover {
 }
 
 /* Styles pour les champs de saisie */
-input[type="text"], input[type="email"], input[type="password"] {
+input[type="text"],
+input[type="email"],
+input[type="password"] {
     width: 100%;
     padding: 10px;
     margin: 10px 0;
-    border-radius: 5px;
     border: 1px solid #ccc;
+    border-radius: 5px;
     font-size: 1em;
-    box-sizing: border-box;
-    transition: border-color 0.3s;
+    transition: border 0.3s;
 }
 
-input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus {
-    border-color: #456268;
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border: 1px solid #456268;
     outline: none;
 }
 
@@ -145,11 +153,13 @@ body.dark-mode {
     color: #ddd;
 }
 
-.dark-mode #login-container, .dark-mode #chat-container {
+.dark-mode #login-container,
+.dark-mode #chat-container {
     background-color: #2c2c2c;
 }
 
-.dark-mode input, .dark-mode button {
+.dark-mode input,
+.dark-mode button {
     background-color: #444;
     color: #ddd;
     border: 1px solid #555;
