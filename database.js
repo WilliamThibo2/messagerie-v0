@@ -33,6 +33,7 @@ const authenticateUser = (email, password, callback) => {
     db.get(`SELECT * FROM users WHERE email = ?`, [email], (err, user) => {
         if (err || !user) return callback(err || new Error("User not found"));
         bcrypt.compare(password, user.password, (err, isMatch) => {
+            if (err) return callback(err);
             if (isMatch) callback(null, user);
             else callback(new Error("Password incorrect"));
         });
