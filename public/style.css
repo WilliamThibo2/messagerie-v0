@@ -63,6 +63,8 @@ body {
     font-style: italic;
     color: #555;
     padding: 5px;
+    margin: 5px 0; /* Nouvelle marge pour l’indicateur de saisie */
+    text-align: left;
 }
 
 #input-container {
