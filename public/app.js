@@ -20,21 +20,28 @@ document.getElementById("login-form").addEventListener("submit", function (e) {
     }
 });
 
-// Envoi de message
+// Envoi de message avec limite de longueur
 document.getElementById("message-form").addEventListener("submit", function (e) {
     e.preventDefault();
     const message = messageInput.value;
-    if (message) {
+    if (message && message.length <= 250) {  // Limite à 250 caractères
         socket.emit("message", message);
         displayMessage(message, "receiver");
         messageInput.value = "";
-        socket.emit("stopTyping");  // Indique que l'utilisateur a arrêté de taper
+        socket.emit("stopTyping");
+    } else {
+        alert("Le message est trop long.");
     }
 });
 
-// Indicateur de saisie
+// Indicateur de saisie avec délai
+let typingTimeout;
 messageInput.addEventListener("input", () => {
     socket.emit("typing");
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        socket.emit("stopTyping");
+    }, 1000);  // Arrête l'indicateur après 1 seconde d'inactivité
 });
 
 socket.on("typing", (username) => {
