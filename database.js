@@ -2,9 +2,9 @@ const sqlite3 = require("sqlite3").verbose();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const db = new sqlite3.Database(":memory:");
+// Update to use a persistent database file instead of in-memory
+const db = new sqlite3.Database("./data/database.sqlite");
 
-// Création des tables utilisateurs et messages
 db.serialize(() => {
     db.run(`CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,4 +54,3 @@ const getMessages = (callback) => {
 };
 
 module.exports = { registerUser, authenticateUser, generateToken, saveMessage, getMessages };
-
